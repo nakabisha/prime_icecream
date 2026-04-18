@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Training</title>
     <style>
         :root {
@@ -29,24 +28,24 @@
             -webkit-user-select: none;
         }
 
-        /* 操作バー：PC・スマホ共通 */
+        /* 操作バー：無駄な装飾を排除 */
         .controls {
             background: var(--bar-bg);
-            padding: env(safe-area-inset-top) 10px 10px; /* iPhoneのノッチ対策 */
+            padding: env(safe-area-inset-top) 10px 10px;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
             border-bottom: 1px solid var(--border);
             z-index: 10;
         }
-        .control-group { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: bold; }
+        .control-group { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: bold; }
         input, select {
             padding: 8px;
             border: 1px solid #ced4da;
             border-radius: 8px;
-            font-size: 16px; /* iPhoneでの自動ズーム防止 */
+            font-size: 16px;
             background: #fff;
             outline: none;
         }
@@ -61,7 +60,6 @@
             border-radius: 12px;
             font-size: 16px;
             font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         button.running { background: var(--danger); }
 
@@ -75,7 +73,7 @@
             min-height: 34px;
         }
 
-        /* メインエリア */
+        /* メイン表示エリア */
         #display-area {
             flex: 1;
             display: flex;
@@ -86,7 +84,6 @@
             cursor: pointer;
             text-align: center;
             padding: 20px;
-            transition: font-size 0.1s;
         }
 
         /* 回答表示用テーブル */
@@ -94,13 +91,11 @@
         .ans-table th { font-size: 1.5rem; color: #adb5bd; border: 2px solid var(--border); padding: 8px; background: #fdfdfe; }
         .ans-table td { font-size: 4.5rem; color: var(--primary); border: 2px solid var(--border); padding: 15px 30px; text-align: center; font-weight: bold; }
 
-        /* スマホ向けサイズ調整 */
         @media (max-width: 600px) {
             #display-area { font-size: 5rem; }
             .ans-table td { font-size: 3.5rem; padding: 10px 20px; }
-            .control-group { font-size: 13px; gap: 4px; }
+            .control-group { font-size: 13px; }
             input[type="number"] { width: 45px; }
-            button { padding: 8px 18px; }
         }
     </style>
 </head>
@@ -112,8 +107,8 @@
                 <option value="hira">かな</option>
             </select>
         </div>
-        <div class="control-group"><label>秒:</label><input type="number" id="timer_val" value="3.0" step="0.1" min="0"></div>
-        <div class="control-group"><label>回:</label><input type="number" id="kaisuu_val" value="10" min="-1"></div>
+        <div class="control-group"><label>秒:</label><input type="number" id="timer_val" value="3.0" step="0.1"></div>
+        <div class="control-group"><label>回:</label><input type="number" id="kaisuu_val" value="10"></div>
         <div class="control-group"><label>種:</label><input type="number" id="shurui_val" value="4" min="1" max="8"></div>
         <button id="start_btn">START</button>
     </div>
@@ -132,52 +127,26 @@
             const display = document.getElementById("display-area");
             const log = document.getElementById("log");
 
-            // かな変換ロジック
             function numToHira(n) {
-                const map = {
-                    0:"", 1:"いち", 2:"に", 3:"さん", 4:"よん", 5:"ご", 6:"ろく", 7:"なな", 8:"はち", 9:"きゅう",
-                    10:"じゅう", 100:"ひゃく", 1000:"せん", 10000:"まん"
-                };
+                const map = {0:"", 1:"いち", 2:"に", 3:"さん", 4:"よん", 5:"ご", 6:"ろく", 7:"なな", 8:"はち", 9:"きゅう", 10:"じゅう", 100:"ひゃく", 1000:"せん", 10000:"まん"};
                 if (n === 0) return "れい";
                 if (n <= 10) return map[n];
-                
-                let res = "";
-                let temp = n;
-
-                if (temp >= 10000) {
-                    let m = Math.floor(temp / 10000);
-                    res += (m > 1 ? numToHira(m) : "") + map[10000];
-                    temp %= 10000;
-                }
-                if (temp >= 1000) {
-                    let s = Math.floor(temp / 1000);
-                    res += (s > 1 ? map[s] : "") + map[1000];
-                    temp %= 1000;
-                }
-                if (temp >= 100) {
-                    let h = Math.floor(temp / 100);
-                    res += (h > 1 ? map[h] : "") + map[100];
-                    temp %= 100;
-                }
-                if (temp >= 10) {
-                    let j = Math.floor(temp / 10);
-                    res += (j > 1 ? map[j] : "") + map[10];
-                    temp %= 10;
-                }
+                let res = "", temp = n;
+                if (temp >= 10000) { let m = Math.floor(temp/10000); res += (m > 1 ? numToHira(m) : "") + map[10000]; temp %= 10000; }
+                if (temp >= 1000) { let s = Math.floor(temp/1000); res += (s > 1 ? map[s] : "") + map[1000]; temp %= 1000; }
+                if (temp >= 100) { let h = Math.floor(temp/100); res += (h > 1 ? map[h] : "") + map[100]; temp %= 100; }
+                if (temp >= 10) { let j = Math.floor(temp/10); res += (j > 1 ? map[j] : "") + map[10]; temp %= 10; }
                 if (temp > 0) res += map[temp];
                 return res;
             }
 
-            // タップ（クリック）で次へ進む
-            const handleNext = (e) => {
-                if (e) e.preventDefault();
+            display.addEventListener('pointerdown', (e) => {
                 if (resolveClick) {
                     const r = resolveClick;
                     resolveClick = null;
                     r();
                 }
-            };
-            display.addEventListener('pointerdown', handleNext);
+            });
 
             async function start() {
                 isRunning = true;
@@ -191,7 +160,6 @@
 
                 for (let c = 0; isRunning && (kaisuu === -1 || c < kaisuu); c++) {
                     let num = 1, exps = [];
-                    // 問題生成（前回と同じにならないようにする）
                     do {
                         num = 1; exps = [];
                         for(let i=0; i<shurui; i++) {
@@ -202,19 +170,14 @@
                     } while (num === lastNum || num < 2);
                     lastNum = num;
 
-                    // 問題表示
-                    display.innerHTML = "";
-                    display.style.fontSize = ""; 
                     display.innerText = (mode === "hira") ? numToHira(num) : num.toLocaleString();
                     log.innerText = kaisuu === -1 ? (c+1) + "問目" : "残り: " + (kaisuu - c) + "問";
 
-                    // 待ち時間（0秒ならクリック待ち）
                     if (timer === 0) await new Promise(r => resolveClick = r);
                     else await new Promise(r => setTimeout(r, timer * 1000));
 
                     if (!isRunning) break;
 
-                    // 回答表示
                     let h = "<tr>", b = "<tr>";
                     for(let i=0; i<shurui; i++) {
                         h += "<th>" + SOSUU[i] + "</th>";
@@ -222,7 +185,6 @@
                     }
                     display.innerHTML = `<table class="ans-table">${h}</tr>${b}</tr></table>`;
 
-                    // 答え合わせの待ち時間（0秒ならクリック待ち、そうでなければ固定2秒）
                     if (timer === 0) await new Promise(r => resolveClick = r);
                     else await new Promise(r => setTimeout(r, 2000));
                 }
@@ -235,13 +197,9 @@
                 btn.classList.remove("running");
                 display.innerText = "Ready";
                 log.innerText = "";
-                resolveClick = null;
             }
 
-            btn.addEventListener('click', () => {
-                if (isRunning) stop();
-                else start();
-            });
+            btn.addEventListener('click', () => { if (isRunning) stop(); else start(); });
         })();
     </script>
 </body>

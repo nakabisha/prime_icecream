@@ -3,187 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Training</title>
+    <title>素因数分解トレーニング</title>
     <style>
-        :root {
-            --bg: #ffffff;
-            --bar-bg: #f8f9fa;
-            --primary: #007bff;
-            --danger: #dc3545;
-            --text: #212529;
-            --border: #dee2e6;
-        }
-        * { touch-action: manipulation; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            padding: 0;
-            color: var(--text);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            -webkit-user-select: none;
-        }
-
-        /* 操作バー：無駄な装飾を排除 */
-        .controls {
-            background: var(--bar-bg);
-            padding: env(safe-area-inset-top) 10px 10px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            border-bottom: 1px solid var(--border);
-            z-index: 10;
-        }
-        .control-group { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: bold; }
-        input, select {
-            padding: 8px;
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            font-size: 16px;
-            background: #fff;
-            outline: none;
-        }
-        input[type="number"] { width: 55px; }
+        :root { --bg-color: #f8f9fa; --card-bg: #ffffff; --primary: #007bff; --danger: #dc3545; --text: #333; }
+        * { touch-action: manipulation; box-sizing: border-box; }
+        body { font-family: sans-serif; text-align: center; background-color: var(--bg-color); margin: 0; padding: 10px; color: var(--text); -webkit-user-select: none; }
         
-        button {
-            padding: 10px 25px;
-            cursor: pointer;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
+        /* 設定エリアの拡大調整 */
+        .controls { 
+            background: var(--card-bg); 
+            padding: 20px; 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            max-width: 1100px; 
+            margin: 0 auto 15px; 
         }
-        button.running { background: var(--danger); }
-
-        /* カウント表示 */
-        #log {
-            font-size: 14px;
-            color: #6c757d;
-            padding: 8px;
-            text-align: center;
-            font-weight: bold;
-            min-height: 34px;
-        }
-
-        /* メイン表示エリア */
-        #display-area {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8rem;
-            font-weight: 900;
-            cursor: pointer;
-            text-align: center;
+        .control-group { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: bold; }
+        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 18px; outline: none; }
+        input[type="number"] { width: 70px; }
+        button { padding: 12px 35px; cursor: pointer; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 20px; font-weight: bold; }
+        
+        #display-area { 
+            width: 95%; 
+            max-width: 700px; 
+            min-height: 300px; 
+            margin: 15px auto; 
+            background: var(--card-bg); 
+            border-radius: 20px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 7rem; 
+            font-weight: bold; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1); 
+            overflow: hidden;
             padding: 20px;
         }
+        .ans-table { border-collapse: collapse; margin: auto; width: 100%; table-layout: fixed; }
+        .ans-table th, .ans-table td { border: 1px solid #dee2e6; padding: 10px; text-align: center; }
+        .ans-table th { font-size: 1.2rem; background: #fafafa; }
+        .ans-table td { color: var(--primary); font-size: 4rem; } 
+        #log { font-size: 20px; color: #666; margin-bottom: 10px; font-weight: bold; }
 
-        /* 回答表示用テーブル */
-        .ans-table { border-collapse: collapse; margin: auto; }
-        .ans-table th { font-size: 1.5rem; color: #adb5bd; border: 2px solid var(--border); padding: 8px; background: #fdfdfe; }
-        .ans-table td { font-size: 4.5rem; color: var(--primary); border: 2px solid var(--border); padding: 15px 30px; text-align: center; font-weight: bold; }
-
+        /* スマホ用：画面が狭いときは元のサイズ感に調整 */
         @media (max-width: 600px) {
-            #display-area { font-size: 5rem; }
-            .ans-table td { font-size: 3.5rem; padding: 10px 20px; }
-            .control-group { font-size: 13px; }
-            input[type="number"] { width: 45px; }
+            .controls { padding: 10px; gap: 10px; }
+            .control-group { font-size: 14px; }
+            input, select { padding: 8px; font-size: 16px; }
+            input[type="number"] { width: 50px; }
+            button { padding: 10px 20px; font-size: 16px; width: 100%; }
+            #display-area { font-size: 3.5rem; min-height: 200px; }
+            .ans-table td { font-size: 2.5rem; }
+            #log { font-size: 16px; }
         }
     </style>
 </head>
 <body>
     <div class="controls">
-        <div class="control-group">
-            <select id="mode_val">
-                <option value="number">数字</option>
-                <option value="hira">かな</option>
-            </select>
-        </div>
+        <div class="control-group"><label>表示:</label><select id="mode_val"><option value="number">数字</option><option value="hira">かな</option></select></div>
+        <div class="control-group"><label>難易度:</label><select id="diff_val"><option value="easy">Easy</option><option value="normal">Normal</option><option value="hard">Hard</option><option value="vhard">V-Hard</option><option value="random" selected>Random</option></select></div>
         <div class="control-group"><label>秒:</label><input type="number" id="timer_val" value="3.0" step="0.1"></div>
-        <div class="control-group"><label>回:</label><input type="number" id="kaisuu_val" value="10"></div>
-        <div class="control-group"><label>種:</label><input type="number" id="shurui_val" value="4" min="1" max="8"></div>
-        <button id="start_btn">START</button>
+        <div class="control-group"><label>回数:</label><input type="number" id="kaisuu_val" value="10"></div>
+        <div class="control-group"><label>種:</label><input type="number" id="shurui_val" value="4"></div>
+        <button id="start_btn">スタート</button>
     </div>
-    
-    <div id="log"></div>
-    <div id="display-area">Ready</div>
+    <div id="log">準備完了</div>
+    <div id="display-area">START</div>
 
     <script>
         (function() {
-            const SOSUU = [2, 3, 5, 7, 11, 13, 17, 19];
-            let isRunning = false;
-            let lastNum = null;
-            let resolveClick = null;
+            var SOSUU = [2, 3, 5, 7, 11, 13, 17, 19];
+            var isRunning = false;
+            var lastNum = null;
+            var resolveClick = null;
 
-            const btn = document.getElementById("start_btn");
-            const display = document.getElementById("display-area");
-            const log = document.getElementById("log");
+            var btn = document.getElementById("start_btn");
+            var display = document.getElementById("display-area");
+            var log = document.getElementById("log");
 
             function numToHira(n) {
-                const map = {0:"", 1:"いち", 2:"に", 3:"さん", 4:"よん", 5:"ご", 6:"ろく", 7:"なな", 8:"はち", 9:"きゅう", 10:"じゅう", 100:"ひゃく", 1000:"せん", 10000:"まん"};
-                if (n === 0) return "れい";
-                if (n <= 10) return map[n];
-                let res = "", temp = n;
-                if (temp >= 10000) { let m = Math.floor(temp/10000); res += (m > 1 ? numToHira(m) : "") + map[10000]; temp %= 10000; }
-                if (temp >= 1000) { let s = Math.floor(temp/1000); res += (s > 1 ? map[s] : "") + map[1000]; temp %= 1000; }
-                if (temp >= 100) { let h = Math.floor(temp/100); res += (h > 1 ? map[h] : "") + map[100]; temp %= 100; }
-                if (temp >= 10) { let j = Math.floor(temp/10); res += (j > 1 ? map[j] : "") + map[10]; temp %= 10; }
-                if (temp > 0) res += map[temp];
-                return res;
+                var units = ["", "いち", "に", "さん", "よん", "ご", "ろく", "なな", "はち", "きゅう"];
+                var s = "";
+                if (n >= 10000) { s += units[Math.floor(n/10000)] + "まん"; n %= 10000; }
+                if (n > 0) s += n; 
+                return s || n;
             }
 
-            display.addEventListener('pointerdown', (e) => {
-                if (resolveClick) {
-                    const r = resolveClick;
-                    resolveClick = null;
-                    r();
-                }
+            display.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                if (resolveClick) { var r = resolveClick; resolveClick = null; r(); }
             });
 
             async function start() {
-                isRunning = true;
-                btn.innerText = "STOP";
-                btn.classList.add("running");
-                
-                const timer = parseFloat(document.getElementById("timer_val").value) || 0;
-                const kaisuu = parseInt(document.getElementById("kaisuu_val").value) || 10;
-                const shurui = parseInt(document.getElementById("shurui_val").value) || 4;
-                const mode = document.getElementById("mode_val").value;
+                isRunning = true; btn.innerText = "ストップ"; btn.style.background = "#dc3545";
+                var timer = parseFloat(document.getElementById("timer_val").value);
+                var kaisuu = parseInt(document.getElementById("kaisuu_val").value);
+                var shurui = parseInt(document.getElementById("shurui_val").value);
+                var mode = document.getElementById("mode_val").value;
 
-                for (let c = 0; isRunning && (kaisuu === -1 || c < kaisuu); c++) {
-                    let num = 1, exps = [];
+                for (var c=0; isRunning && (kaisuu === -1 || c < kaisuu); c++) {
+                    var num = 1, exps = [];
                     do {
                         num = 1; exps = [];
-                        for(let i=0; i<shurui; i++) {
-                            let p = Math.floor(Math.random() * 3);
-                            exps.push(p);
-                            num *= Math.pow(SOSUU[i], p);
+                        for(var i=0; i<shurui; i++) {
+                            var p = Math.floor(Math.random()*3);
+                            exps.push(p); num *= Math.pow(SOSUU[i], p);
                         }
                     } while (num === lastNum || num < 2);
                     lastNum = num;
 
                     display.innerText = (mode === "hira") ? numToHira(num) : num.toLocaleString();
-                    log.innerText = kaisuu === -1 ? (c+1) + "問目" : "残り: " + (kaisuu - c) + "問";
+                    log.innerText = "残り: " + (kaisuu === -1 ? "∞" : kaisuu - c);
 
                     if (timer === 0) await new Promise(r => resolveClick = r);
                     else await new Promise(r => setTimeout(r, timer * 1000));
 
                     if (!isRunning) break;
 
-                    let h = "<tr>", b = "<tr>";
-                    for(let i=0; i<shurui; i++) {
-                        h += "<th>" + SOSUU[i] + "</th>";
-                        b += "<td>" + exps[i] + "</td>";
+                    var h = "<tr>", b = "<tr>";
+                    for(var i=0; i<shurui; i++) {
+                        h += "<th>"+SOSUU[i]+"</th>"; b += "<td>"+exps[i]+"</td>";
                     }
-                    display.innerHTML = `<table class="ans-table">${h}</tr>${b}</tr></table>`;
+                    display.innerHTML = "<table class='ans-table'>"+h+"</tr>"+b+"</tr></table>";
 
                     if (timer === 0) await new Promise(r => resolveClick = r);
                     else await new Promise(r => setTimeout(r, 2000));
@@ -192,14 +137,11 @@
             }
 
             function stop() {
-                isRunning = false;
-                btn.innerText = "START";
-                btn.classList.remove("running");
-                display.innerText = "Ready";
-                log.innerText = "";
+                isRunning = false; btn.innerText = "スタート"; btn.style.background = "#007bff";
+                display.innerText = "START"; log.innerText = "準備完了";
             }
 
-            btn.addEventListener('click', () => { if (isRunning) stop(); else start(); });
+            btn.addEventListener('click', function() { if(isRunning) stop(); else start(); });
         })();
     </script>
 </body>

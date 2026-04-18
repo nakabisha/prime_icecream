@@ -3,54 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Training</title>
     <style>
         :root {
-            --bg-color: #ffffff;
-            --card-bg: #f1f3f5;
+            --bg: #ffffff;
+            --bar-bg: #f8f9fa;
             --primary: #007bff;
+            --danger: #dc3545;
             --text: #212529;
+            --border: #dee2e6;
         }
-        * { touch-action: manipulation; box-sizing: border-box; }
+        * { touch-action: manipulation; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
             margin: 0;
             padding: 0;
             color: var(--text);
             height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
             -webkit-user-select: none;
         }
 
-        /* PC・スマホ両対応の設定バー */
+        /* 操作バー：PC・スマホ共通 */
         .controls {
-            background: var(--card-bg);
-            padding: 12px;
+            background: var(--bar-bg);
+            padding: env(safe-area-inset-top) 10px 10px; /* iPhoneのノッチ対策 */
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
-            gap: 15px;
-            border-bottom: 1px solid #dee2e6;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
             z-index: 10;
         }
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 15px;
-            font-weight: bold;
-        }
+        .control-group { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: bold; }
         input, select {
             padding: 8px;
             border: 1px solid #ced4da;
-            border-radius: 6px;
-            font-size: 16px;
-            background: #ffffff;
+            border-radius: 8px;
+            font-size: 16px; /* iPhoneでの自動ズーム防止 */
+            background: #fff;
+            outline: none;
         }
-        input[type="number"] { width: 60px; }
+        input[type="number"] { width: 55px; }
         
         button {
             padding: 10px 25px;
@@ -58,51 +58,49 @@
             background: var(--primary);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        button:active { transform: translateY(1px); }
-        #start_btn.running { background: #dc3545; }
+        button.running { background: var(--danger); }
 
         /* カウント表示 */
         #log {
-            font-size: 16px;
-            color: #495057;
-            padding: 10px;
+            font-size: 14px;
+            color: #6c757d;
+            padding: 8px;
             text-align: center;
             font-weight: bold;
-            background: #fff;
+            min-height: 34px;
         }
 
-        /* メイン表示エリア（PC・スマホ共通で中央配置） */
+        /* メインエリア */
         #display-area {
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 8rem; /* PCではさらに大きく */
+            font-size: 8rem;
             font-weight: 900;
             cursor: pointer;
-            transition: font-size 0.2s;
+            text-align: center;
+            padding: 20px;
+            transition: font-size 0.1s;
         }
 
         /* 回答表示用テーブル */
-        .ans-table {
-            border-collapse: collapse;
-            margin: auto;
-            min-width: 300px;
-        }
-        .ans-table th { font-size: 1.5rem; color: #6c757d; border: 2px solid #dee2e6; padding: 10px; background: #f8f9fa; }
-        .ans-table td { font-size: 4rem; color: var(--primary); border: 2px solid #dee2e6; padding: 15px 25px; text-align: center; font-weight: bold; }
+        .ans-table { border-collapse: collapse; margin: auto; }
+        .ans-table th { font-size: 1.5rem; color: #adb5bd; border: 2px solid var(--border); padding: 8px; background: #fdfdfe; }
+        .ans-table td { font-size: 4.5rem; color: var(--primary); border: 2px solid var(--border); padding: 15px 30px; text-align: center; font-weight: bold; }
 
-        /* スマホ向けの微調整 */
+        /* スマホ向けサイズ調整 */
         @media (max-width: 600px) {
             #display-area { font-size: 5rem; }
-            .ans-table td { font-size: 3rem; padding: 10px; }
-            .control-group { font-size: 13px; }
-            input[type="number"] { width: 50px; }
+            .ans-table td { font-size: 3.5rem; padding: 10px 20px; }
+            .control-group { font-size: 13px; gap: 4px; }
+            input[type="number"] { width: 45px; }
+            button { padding: 8px 18px; }
         }
     </style>
 </head>
@@ -114,9 +112,9 @@
                 <option value="hira">かな</option>
             </select>
         </div>
-        <div class="control-group"><label>秒:</label><input type="number" id="timer_val" value="3.0" step="0.1"></div>
-        <div class="control-group"><label>回:</label><input type="number" id="kaisuu_val" value="10"></div>
-        <div class="control-group"><label>種:</label><input type="number" id="shurui_val" value="4"></div>
+        <div class="control-group"><label>秒:</label><input type="number" id="timer_val" value="3.0" step="0.1" min="0"></div>
+        <div class="control-group"><label>回:</label><input type="number" id="kaisuu_val" value="10" min="-1"></div>
+        <div class="control-group"><label>種:</label><input type="number" id="shurui_val" value="4" min="1" max="8"></div>
         <button id="start_btn">START</button>
     </div>
     
@@ -134,32 +132,66 @@
             const display = document.getElementById("display-area");
             const log = document.getElementById("log");
 
+            // かな変換ロジック
             function numToHira(n) {
-                const units = ["", "いち", "に", "さん", "よん", "ご", "ろく", "なな", "はち", "きゅう"];
-                return (n < 10) ? units[n] : n;
+                const map = {
+                    0:"", 1:"いち", 2:"に", 3:"さん", 4:"よん", 5:"ご", 6:"ろく", 7:"なな", 8:"はち", 9:"きゅう",
+                    10:"じゅう", 100:"ひゃく", 1000:"せん", 10000:"まん"
+                };
+                if (n === 0) return "れい";
+                if (n <= 10) return map[n];
+                
+                let res = "";
+                let temp = n;
+
+                if (temp >= 10000) {
+                    let m = Math.floor(temp / 10000);
+                    res += (m > 1 ? numToHira(m) : "") + map[10000];
+                    temp %= 10000;
+                }
+                if (temp >= 1000) {
+                    let s = Math.floor(temp / 1000);
+                    res += (s > 1 ? map[s] : "") + map[1000];
+                    temp %= 1000;
+                }
+                if (temp >= 100) {
+                    let h = Math.floor(temp / 100);
+                    res += (h > 1 ? map[h] : "") + map[100];
+                    temp %= 100;
+                }
+                if (temp >= 10) {
+                    let j = Math.floor(temp / 10);
+                    res += (j > 1 ? map[j] : "") + map[10];
+                    temp %= 10;
+                }
+                if (temp > 0) res += map[temp];
+                return res;
             }
 
-            // 画面クリック/タップで次へ
-            display.addEventListener('pointerdown', (e) => {
+            // タップ（クリック）で次へ進む
+            const handleNext = (e) => {
+                if (e) e.preventDefault();
                 if (resolveClick) {
                     const r = resolveClick;
                     resolveClick = null;
                     r();
                 }
-            });
+            };
+            display.addEventListener('pointerdown', handleNext);
 
             async function start() {
                 isRunning = true;
                 btn.innerText = "STOP";
                 btn.classList.add("running");
                 
-                const timer = parseFloat(document.getElementById("timer_val").value);
-                const kaisuu = parseInt(document.getElementById("kaisuu_val").value);
-                const shurui = parseInt(document.getElementById("shurui_val").value);
+                const timer = parseFloat(document.getElementById("timer_val").value) || 0;
+                const kaisuu = parseInt(document.getElementById("kaisuu_val").value) || 10;
+                const shurui = parseInt(document.getElementById("shurui_val").value) || 4;
                 const mode = document.getElementById("mode_val").value;
 
                 for (let c = 0; isRunning && (kaisuu === -1 || c < kaisuu); c++) {
                     let num = 1, exps = [];
+                    // 問題生成（前回と同じにならないようにする）
                     do {
                         num = 1; exps = [];
                         for(let i=0; i<shurui; i++) {
@@ -170,15 +202,19 @@
                     } while (num === lastNum || num < 2);
                     lastNum = num;
 
-                    display.style.fontSize = ""; // CSSのデフォルトに戻す
+                    // 問題表示
+                    display.innerHTML = "";
+                    display.style.fontSize = ""; 
                     display.innerText = (mode === "hira") ? numToHira(num) : num.toLocaleString();
                     log.innerText = kaisuu === -1 ? (c+1) + "問目" : "残り: " + (kaisuu - c) + "問";
 
+                    // 待ち時間（0秒ならクリック待ち）
                     if (timer === 0) await new Promise(r => resolveClick = r);
                     else await new Promise(r => setTimeout(r, timer * 1000));
 
                     if (!isRunning) break;
 
+                    // 回答表示
                     let h = "<tr>", b = "<tr>";
                     for(let i=0; i<shurui; i++) {
                         h += "<th>" + SOSUU[i] + "</th>";
@@ -186,6 +222,7 @@
                     }
                     display.innerHTML = `<table class="ans-table">${h}</tr>${b}</tr></table>`;
 
+                    // 答え合わせの待ち時間（0秒ならクリック待ち、そうでなければ固定2秒）
                     if (timer === 0) await new Promise(r => resolveClick = r);
                     else await new Promise(r => setTimeout(r, 2000));
                 }
@@ -198,6 +235,7 @@
                 btn.classList.remove("running");
                 display.innerText = "Ready";
                 log.innerText = "";
+                resolveClick = null;
             }
 
             btn.addEventListener('click', () => {

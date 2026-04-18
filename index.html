@@ -3,193 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>素因数分解トレーニング</title>
+    <title>Training</title>
     <style>
-        :root { --bg-color: #f8f9fa; --card-bg: #ffffff; --primary: #007bff; --danger: #dc3545; --text: #333; }
-        * { touch-action: manipulation; } /* ダブルタップズーム防止 */
-        body { font-family: sans-serif; text-align: center; background-color: var(--bg-color); margin: 0; padding: 10px; color: var(--text); -webkit-user-select: none; }
-        .controls { background: var(--card-bg); padding: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto 15px; }
-        .control-group { display: flex; align-items: center; gap: 5px; font-size: 14px; }
-        input, select { padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; } /* スマホ向けに少し大きく */
-        input[type="number"] { width: 60px; }
-        button { padding: 12px 25px; cursor: pointer; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; -webkit-tap-highlight-color: transparent; }
-        #display-area { width: 95%; max-width: 900px; min-height: 250px; margin: 15px auto; background: var(--card-bg); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: clamp(2rem, 10vw, 4rem); font-weight: bold; box-shadow: 0 8px 25px rgba(0,0,0,0.1); cursor: pointer; padding: 10px; overflow: hidden; }
-        .ans-table { border-collapse: collapse; margin: auto; width: 100%; table-layout: fixed; }
-        .ans-table th, .ans-table td { border: 1px solid #dee2e6; padding: 5px 1px; text-align: center; }
-        .ans-table th { font-size: 14px; background: #eee; }
-        .ans-table td { color: var(--primary); font-size: clamp(1.2rem, 5vw, 2.5rem); }
-        #log { font-size: 16px; color: #666; margin-bottom: 10px; font-weight: bold; min-height: 1.5em; }
-        .info-section { max-width: 800px; margin: 20px auto; background: var(--card-bg); padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-size: 12px; }
-        .info-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .info-table th, .info-table td { border: 1px solid #eee; padding: 5px; text-align: center; }
-        .expect-val { font-weight: bold; color: #d63384; }
+        :root {
+            --bg-color: #1a1a1a; /* 目に優しいダークモード */
+            --card-bg: #2d2d2d;
+            --primary: #4dabf7;
+            --accent: #ff922b;
+            --text: #ffffff;
+        }
+        * { touch-action: manipulation; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            -webkit-user-select: none;
+        }
+        /* 設定エリア：よりコンパクトに */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0 0 15px 15px;
+        }
+        .control-group { display: flex; align-items: center; gap: 4px; font-size: 12px; }
+        input, select {
+            background: #333;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 4px 6px;
+            font-size: 14px;
+        }
+        input[type="number"] { width: 45px; }
+        button {
+            padding: 8px 20px;
+            cursor: pointer;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+        button:active { transform: scale(0.95); }
+        #start_btn.running { background: #fa5252; }
+
+        /* 数字表示エリア：画面の主役 */
+        #display-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            font-weight: 800;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+        /* 回答テーブルの装飾 */
+        .ans-table {
+            border-collapse: separate;
+            border-spacing: 10px;
+            margin: auto;
+        }
+        .ans-table th { font-size: 1.2rem; color: #888; font-weight: normal; }
+        .ans-table td { font-size: 3rem; color: var(--accent); border-bottom: 3px solid var(--accent); }
+
+        #log { font-size: 12px; color: #888; margin-top: 5px; min-height: 14px; }
     </style>
 </head>
 <body>
-
-    <h1>素因数分解トレーニング</h1>
-
     <div class="controls">
-        <div class="control-group"><label>表示:</label><select id="mode_val"><option value="number">数字</option><option value="hira">かな</option></select></div>
-        <div class="control-group"><label>難易度:</label><select id="diff_val"><option value="easy">Easy</option><option value="normal">Normal</option><option value="hard">Hard</option><option value="vhard">V-Hard</option><option value="random" selected>Random</option></select></div>
+        <div class="control-group"><select id="mode_val"><option value="number">数字</option><option value="hira">かな</option></select></div>
         <div class="control-group"><label>秒:</label><input type="number" id="timer_val" value="3.0" step="0.1"></div>
-        <div class="control-group"><label>回数:</label><input type="number" id="kaisuu_val" value="10"></div>
-        <div class="control-group"><label>種:</label><input type="number" id="shurui_val" value="4" min="1" max="8"></div>
-        <button id="start_btn">スタート</button>
+        <div class="control-group"><label>数:</label><input type="number" id="kaisuu_val" value="10"></div>
+        <div class="control-group"><label>種:</label><input type="number" id="shurui_val" value="4"></div>
+        <button id="start_btn">START</button>
     </div>
-
-    <div id="log">準備完了（スマホ対応版）</div>
-    <div id="display-area">START</div>
-
-    <div class="info-section">
-        <strong>期待値（合計指数）</strong>
-        <table class="info-table">
-            <thead><tr><th>Easy</th><th>Normal</th><th>Hard</th><th>V-Hard</th><th>Random</th></tr></thead>
-            <tbody>
-                <tr>
-                    <td id="exp_easy" class="expect-val">-</td>
-                    <td id="exp_normal" class="expect-val">-</td>
-                    <td id="exp_hard" class="expect-val">-</td>
-                    <td id="exp_vhard" class="expect-val">-</td>
-                    <td id="exp_random" class="expect-val">-</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    <div id="log"></div>
+    <div id="display-area">Ready</div>
 
     <script>
         (function() {
-            var SOSUU_MASTER = [2, 3, 5, 7, 11, 13, 17, 19];
-            var isRunning = false;
-            var resolveClick = null;
-            var lastNumber = null;
+            const SOSUU = [2, 3, 5, 7, 11, 13, 17, 19];
+            let isRunning = false;
+            let lastNum = null;
+            let resolveClick = null;
 
-            var btn = document.getElementById("start_btn");
-            var display = document.getElementById("display-area");
-            var log = document.getElementById("log");
-            var shuruiInput = document.getElementById("shurui_val");
+            const btn = document.getElementById("start_btn");
+            const display = document.getElementById("display-area");
+            const log = document.getElementById("log");
 
-            function updateExpectations() {
-                var s = parseInt(shuruiInput.value) || 4;
-                var e = (49/90) * s, n = (79/90) * s, h = (100/85) * s, v = (132/83) * s;
-                var r = (e*1 + n*3 + h*5 + v*1) / 10;
-                document.getElementById('exp_easy').innerText = e.toFixed(2);
-                document.getElementById('exp_normal').innerText = n.toFixed(2);
-                document.getElementById('exp_hard').innerText = h.toFixed(2);
-                document.getElementById('exp_vhard').innerText = v.toFixed(2);
-                document.getElementById('exp_random').innerText = r.toFixed(2);
+            function numToHira(n) {
+                if (n < 10) return ["", "いち", "に", "さん", "よん", "ご", "ろく", "なな", "はち", "きゅう"][n];
+                return n; 
             }
 
-            shuruiInput.addEventListener('input', updateExpectations);
-            updateExpectations();
-
-            function numToHira(num) {
-                if (num === 0) return "ぜろ";
-                var units = ["", "いち", "に", "さん", "よん", "ご", "ろく", "なな", "はち", "きゅう"];
-                var tens = ["", "じゅう", "にじゅう", "さんじゅう", "よんじゅう", "ごじゅう", "ろくじゅう", "ななじゅう", "はちじゅう", "きゅうじゅう"];
-                var hundreds = ["", "ひゃく", "にひゃく", "さんびゃく", "よんひゃく", "ごひゃく", "ろっぴゃく", "ななひゃく", "はっぴゃく", "きゅうひゃく"];
-                var thousands = ["", "せん", "にせん", "さんぜん", "よんせん", "ごせん", "ろくせん", "ななせん", "はっせん", "きゅうせん"];
-                function sub(n) {
-                    var res = "";
-                    var d4 = Math.floor(n / 1000), d3 = Math.floor((n % 1000) / 100), d2 = Math.floor((n % 100) / 10), d1 = n % 10;
-                    if (d4 === 1) res += "せん"; else if (d4 > 1) res += thousands[d4];
-                    if (d3 === 1) res += "ひゃく"; else if (d3 > 1) res += hundreds[d3];
-                    if (d2 === 1) res += "じゅう"; else if (d2 > 1) res += tens[d2];
-                    res += units[d1];
-                    return res;
+            // 画面タップで次へ進む
+            display.addEventListener('pointerdown', (e) => {
+                if (resolveClick) {
+                    const r = resolveClick;
+                    resolveClick = null;
+                    r();
                 }
-                var s = "";
-                if (num >= 10000) { s += sub(Math.floor(num / 10000)) + "まん"; num %= 10000; }
-                s += sub(num);
-                return s;
-            }
+            });
 
-            function getTable(type) {
-                var d = { "easy": [50, 30, 8, 1], "normal": [40, 40, 15, 3], "hard": [20, 35, 25, 5], "vhard": [10, 30, 30, 10, 3] }[type];
-                var res = [];
-                for(var i=0; i<d.length; i++) for(var j=0; j<d[i]; j++) res.push(i);
-                return res;
-            }
-            var Tables = { "easy": getTable("easy"), "normal": getTable("normal"), "hard": getTable("hard"), "vhard": getTable("vhard") };
-
-            function handleInteraction(e) {
-                if (e) e.preventDefault();
-                if (resolveClick) { var r = resolveClick; resolveClick = null; r(); }
-            }
-            display.addEventListener('touchstart', handleInteraction, {passive: false});
-            display.addEventListener('mousedown', handleInteraction);
-
-            async function startGame() {
-                if (isRunning) return;
+            async function start() {
                 isRunning = true;
-                lastNumber = null;
-                btn.innerText = "ストップ";
-                btn.style.background = "#dc3545";
+                btn.innerText = "STOP";
+                btn.classList.add("running");
+                
+                const timer = parseFloat(document.getElementById("timer_val").value);
+                const kaisuu = parseInt(document.getElementById("kaisuu_val").value);
+                const shurui = parseInt(document.getElementById("shurui_val").value);
+                const mode = document.getElementById("mode_val").value;
 
-                var timer = parseFloat(document.getElementById("timer_val").value) || 3.0;
-                var kaisuu = parseInt(document.getElementById("kaisuu_val").value) || 10;
-                var shurui = Math.min(8, parseInt(shuruiInput.value) || 4);
-                var mode = document.getElementById("mode_val").value;
-                var baseDiff = document.getElementById("diff_val").value;
-
-                var count = 0;
-                while (isRunning && (kaisuu === -1 || count < kaisuu)) {
-                    var diff = baseDiff;
-                    if (diff === "random") diff = ["easy","normal","normal","normal","hard","hard","hard","hard","hard","vhard"][Math.floor(Math.random()*10)];
-                    
-                    var table = Tables[diff];
-                    var num = 1, exponents = [], sumExp = 0, failSafe = 0;
-
-                    while (true) {
-                        num = 1; sumExp = 0; exponents = [];
-                        for (var i=0; i<shurui; i++) {
-                            var p = table[Math.floor(Math.random()*table.length)];
-                            if (failSafe > 50 && i > 2) p = 0;
-                            exponents.push(p);
-                            num *= Math.pow(SOSUU_MASTER[i], p);
-                            sumExp += p;
+                for (let c = 0; isRunning && (kaisuu === -1 || c < kaisuu); c++) {
+                    let num = 1, exps = [];
+                    do {
+                        num = 1; exps = [];
+                        for(let i=0; i<shurui; i++) {
+                            let p = Math.floor(Math.random() * 3);
+                            exps.push(p);
+                            num *= Math.pow(SOSUU[i], p);
                         }
-                        if (((sumExp >= 2 && num < 1000000) && num !== lastNumber) || failSafe > 150) break;
-                        failSafe++;
-                    }
-                    lastNumber = num;
+                    } while (num === lastNum || num < 2);
+                    lastNum = num;
 
-                    display.innerText = (mode === "hira") ? numToHira(num) : num.toLocaleString(); 
-                    log.innerText = diff.toUpperCase() + " | 残り: " + (kaisuu === -1 ? "∞" : (kaisuu - count));
+                    display.style.fontSize = "5rem";
+                    display.innerText = (mode === "hira") ? numToHira(num) : num.toLocaleString();
+                    log.innerText = kaisuu === -1 ? "Count: " + (c+1) : "Remaining: " + (kaisuu - c);
 
-                    if (timer === 0) await new Promise(function(r) { resolveClick = r; });
-                    else await new Promise(function(r) { setTimeout(r, timer * 1000); });
+                    if (timer === 0) await new Promise(r => resolveClick = r);
+                    else await new Promise(r => setTimeout(r, timer * 1000));
 
                     if (!isRunning) break;
 
-                    var h = "<tr>", b = "<tr>";
-                    for(var i=0; i<shurui; i++) {
-                        h += "<th>"+SOSUU_MASTER[i]+"</th>";
-                        b += "<td>"+exponents[i]+"</td>";
+                    // 回答表示
+                    let h = "<tr>", b = "<tr>";
+                    for(let i=0; i<shurui; i++) {
+                        h += "<th>" + SOSUU[i] + "</th>";
+                        b += "<td>" + exps[i] + "</td>";
                     }
-                    display.innerHTML = "<table class='ans-table'>" + h + "</tr>" + b + "</tr></table>";
+                    display.style.fontSize = "1rem";
+                    display.innerHTML = `<table class="ans-table">${h}</tr>${b}</tr></table>`;
 
-                    if (timer === 0) await new Promise(function(r) { resolveClick = r; });
-                    else await new Promise(function(r) { setTimeout(r, 2000); });
-
-                    count++;
+                    if (timer === 0) await new Promise(r => resolveClick = r);
+                    else await new Promise(r => setTimeout(r, 2000));
                 }
-                stopGame();
+                stop();
             }
 
-            function stopGame() {
+            function stop() {
                 isRunning = false;
-                btn.innerText = "スタート";
-                btn.style.background = "#007bff";
-                display.innerHTML = "READY";
-                log.innerText = "準備完了";
-                if (resolveClick) { resolveClick(); resolveClick = null; }
+                btn.innerText = "START";
+                btn.classList.remove("running");
+                display.style.fontSize = "3rem";
+                display.innerText = "Ready";
+                log.innerText = "";
             }
 
-            btn.addEventListener('click', function() {
-                if (isRunning) stopGame(); else startGame();
+            btn.addEventListener('click', () => {
+                if (isRunning) stop();
+                else start();
             });
-
         })();
     </script>
 </body>

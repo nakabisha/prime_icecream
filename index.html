@@ -70,14 +70,14 @@
             <label>難易度:</label>
             <select id="diff_val">
                 <option value="easy">Easy</option>
-                <option value="normal">Normal</option>
+                <option value="normal" selected>Normal</option>
                 <option value="hard">Hard</option>
                 <option value="vhard">Very Hard</option>
-                <option value="random" selected>Random</option>
+                <option value="random">Random</option>
             </select>
         </div>
-        <div class="control-group"><label>秒:</label><input type="number" id="timer_val" value="3.0" step="0.1" min="0"></div>
-        <div class="control-group"><label>回数:</label><input type="number" id="kaisuu_val" value="10"></div>
+        <div class="control-group"><label>秒:</label><input type="number" id="timer_val" value="0" step="0.1" min="0"></div>
+        <div class="control-group"><label>回数:</label><input type="number" id="kaisuu_val" value="-1"></div>
         <div class="control-group"><label>種:</label><input type="number" id="shurui_val" value="4" min="1" max="8"></div>
         <button id="start_btn">スタート</button>
     </div>
@@ -210,7 +210,7 @@
                     else if (level === "vhard") { 
                         weights = [0.1, 1.5, 2, 0.5, 0.1]; 
                         maxExpsSum = 99; 
-                        minExpsSum = 7; // 下限を7に変更
+                        minExpsSum = 7;
                     }
 
                     var totalW = weights.reduce(function(a, b) { return a + b; }, 0);
@@ -236,7 +236,7 @@
                     var outText = (mode === "hira") ? numToHira(num) : num.toString();
                     adjustFontSize(outText, false);
                     display.innerText = outText;
-                    log.innerText = "残り: " + (kaisuu === -1 ? "∞" : kaisuu - c) + (timer === 0 ? " (クリックで回答)" : "");
+                    log.innerText = (kaisuu === -1 ? "練習中 (無限)" : "残り: " + (kaisuu - c)) + (timer === 0 ? " (クリックで回答)" : "");
 
                     if (timer === 0) {
                         await new Promise(r => resolveClick = r);
@@ -252,7 +252,7 @@
                     }
                     adjustFontSize("", true);
                     display.innerHTML = "<table class='ans-table'>"+h+"</tr>"+b+"</tr></table>";
-                    log.innerText = "残り: " + (kaisuu === -1 ? "∞" : kaisuu - c) + (timer === 0 ? " (クリックで次へ)" : "");
+                    log.innerText = (kaisuu === -1 ? "練習中 (無限)" : "残り: " + (kaisuu - c)) + (timer === 0 ? " (クリックで次へ)" : "");
 
                     if (timer === 0) {
                         await new Promise(r => resolveClick = r);
